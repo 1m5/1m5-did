@@ -43,6 +43,8 @@ public class DIDService extends BaseService {
     private Map<String,DID> localUserDIDs = new HashMap<>();
     private Map<String,DID> contacts = new HashMap<>();
 
+    public DIDService() {}
+
     public DIDService(MessageProducer producer, ServiceStatusListener serviceStatusListener) {
         super(producer, serviceStatusListener);
     }

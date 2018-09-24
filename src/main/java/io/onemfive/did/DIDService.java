@@ -137,6 +137,9 @@ public class DIDService extends BaseService {
                     r.errorCode = AuthenticateDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_UNKNOWN;
                     LOG.warning(e1.getLocalizedMessage());
                 }
+                if(r.did.getAuthenticated()) {
+                    e.setDID(r.did);
+                }
                 break;
             }
             case OPERATION_CREATE: {

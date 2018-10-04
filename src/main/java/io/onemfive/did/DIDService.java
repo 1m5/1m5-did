@@ -29,6 +29,7 @@ public class DIDService extends BaseService {
     public static final String OPERATION_AUTHENTICATE = "AUTHENTICATE";
     public static final String OPERATION_CREATE = "CREATE";
     public static final String OPERATION_AUTHENTICATE_CREATE = "AUTHENTICATE_CREATE";
+    public static final String OPERATION_REVOKE = "REVOKE";
     public static final String OPERATION_HASH = "HASH";
     public static final String OPERATION_VERIFY_HASH = "VERIFY_HASH";
     public static final String OPERATION_GET_LOCAL_DID = "GET_LOCAL_DID";
@@ -163,6 +164,10 @@ public class DIDService extends BaseService {
                     r.errorCode = AuthenticateDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_UNKNOWN;
                     LOG.warning(e1.getLocalizedMessage());
                 }
+                break;
+            }
+            case OPERATION_REVOKE: {
+
                 break;
             }
             case OPERATION_HASH: {

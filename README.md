@@ -43,7 +43,7 @@ By definition, if the platform is governed by a private entity or limited set of
 is not in control of the future of their identity.
 
 1M5 will be governed by members and membership will be open to those using it through their public keys (identities).
-Governance within the application will be supported in the future by members, especially with the implementation of [V4D](https://v4d.io).
+Governance within the application will be supported in the future by members, especially with the implementation of [V4D](http://v4d.gaiagloaming.io).
 
 ### Identities must exist for the life of the identity holder
 
@@ -68,7 +68,7 @@ control their identity.
 
 ### Identities must be interoperable
 
-Identity holders must be able to us their identities in all facets of their lives. So any identity platform
+Identity holders must be able to use their identities in all facets of their lives. So any identity platform
 or protocol must function across geographical, political and commercial jurisdictions. Identities should be as
 widely usable as possible. Ultimately, identities are of little value if they only work in niches.
 
@@ -96,7 +96,7 @@ street address, height, weight, etc.
 * Data can be shown to 3rd parties if the member wishes as in the example with being old enough to purchase alcohol in a jurisdiction requiring proof of age but all data owned by the user is managed by the user to uphold voluntaryism.
 * The only rules to be followed within 1M5 is ethics and it's defined to be the non-aggression principle / voluntary relationships (voluntaryism).
 
-### The rights of identity holders must supersede any other platform or ecosystem entities</h2>
+### The rights of identity holders must supersede any other platform or ecosystem entities
 
 If a conflict arises between the needs of the platform or entities engaging with identity holders, the
 governance must be designed to err on the side of preserving these rights for identity holder over the

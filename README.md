@@ -1,7 +1,7 @@
 # Decentralized IDentification (DID) Service
 Implementing [Web Of Trust](https://en.wikipedia.org/wiki/Web_of_trust) with Self Sovereign Identity
  
-Uses Key Ring Service to Manage the Physical Persistence, Generation, Revocation, and Destruction of Keys
+Uses Key Ring Service to Manage the Physical Persistence, Generation, Encryption, Decryption, Revocation, and Destruction of Keys
 
 ## Bill of Rights
 

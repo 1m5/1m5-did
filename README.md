@@ -109,10 +109,4 @@ independent, and free of censorship.
 
 ## Features and Roadmap
 The DID Service is being implemented as individual projects needs arise.
-The following projects are currently being worked in:
 
-* [Inkrypt](https://inkrypt.io)
-* [Dragonsbane](https://dragonsbane.io)
-* [Dgramz](https://dgramz.io)
-* [V4D](https://v4d.io)
-* [460R4](https://460r4.io)

@@ -210,9 +210,9 @@ public class DIDService extends BaseService {
 
     private DID verify(DID did) {
         LOG.info("Received verify DID request.");
-        if(did.getIdentityHash() == null) {
+        if(did.getAddress() == null) {
             try {
-                did.setIdentityHash(HashUtil.generateHash(did.getAlias()));
+                did.setAddress(HashUtil.generateHash(did.getAlias()));
             } catch (Exception e) {
                 LOG.warning(e.getLocalizedMessage());
                 did.setVerified(false);
@@ -244,7 +244,7 @@ public class DIDService extends BaseService {
         did.setAuthenticated(true);
         did.setVerified(true);
         did.setStatus(DID.Status.ACTIVE);
-        did.setIdentityHash(HashUtil.generateHash(did.getAlias()));
+        did.setAddress(HashUtil.generateHash(did.getAlias()));
         SaveDIDDAO dao = new SaveDIDDAO(infoVaultDB, did, true);
         dao.execute();
         if(dao.getException() != null) {

@@ -9,9 +9,7 @@ import io.onemfive.data.Envelope;
 import io.onemfive.data.Route;
 import io.onemfive.data.util.DLC;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -85,16 +83,7 @@ public class DIDService extends BaseService {
                     r.errorCode = GetLocalDIDRequest.DID_ALIAS_REQUIRED;
                     break;
                 }
-                try {
-                    r.did = getLocalDID(r);
-                } catch (NoSuchAlgorithmException e1) {
-                    r.errorCode = GetLocalDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_UNKNOWN;
-                    break;
-                } catch (InvalidKeySpecException e1) {
-                    r.errorCode = GetLocalDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_UNKNOWN;
-                    LOG.warning(e1.getLocalizedMessage());
-                    break;
-                }
+                r.did = getLocalDID(r);
                 break;
             }
             case OPERATION_ADD_CONTACT: {
@@ -130,14 +119,7 @@ public class DIDService extends BaseService {
                     r.errorCode = AuthenticateDIDRequest.DID_PASSPHRASE_REQUIRED;
                     break;
                 }
-                try {
-                    authenticate(r);
-                } catch (NoSuchAlgorithmException e1) {
-                    r.errorCode = AuthenticateDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_UNKNOWN;
-                } catch (InvalidKeySpecException e1) {
-                    r.errorCode = AuthenticateDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_UNKNOWN;
-                    LOG.warning(e1.getLocalizedMessage());
-                }
+                authenticate(r);
                 if(r.did.getAuthenticated()) {
                     e.setDID(r.did);
                 }
@@ -145,25 +127,12 @@ public class DIDService extends BaseService {
             }
             case OPERATION_CREATE: {
                 DID did = (DID)DLC.getData(DID.class,e);
-                try {
-                    e.setDID(create(did));
-                } catch (NoSuchAlgorithmException e1) {
-                    LOG.warning(e1.getLocalizedMessage());
-                } catch (InvalidKeySpecException e1) {
-                    LOG.warning(e1.getLocalizedMessage());
-                }
+                e.setDID(create(did));
                 break;
             }
             case OPERATION_AUTHENTICATE_CREATE: {
                 AuthenticateDIDRequest r = (AuthenticateDIDRequest)DLC.getData(AuthenticateDIDRequest.class,e);
-                try {
-                    authenticateOrCreate(r);
-                } catch (NoSuchAlgorithmException e1) {
-                    r.errorCode = AuthenticateDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_UNKNOWN;
-                } catch (InvalidKeySpecException e1) {
-                    r.errorCode = AuthenticateDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_UNKNOWN;
-                    LOG.warning(e1.getLocalizedMessage());
-                }
+                authenticateOrCreate(r);
                 break;
             }
             case OPERATION_REVOKE: {
@@ -186,7 +155,7 @@ public class DIDService extends BaseService {
         }
     }
 
-    private DID getLocalDID(io.onemfive.did.GetLocalDIDRequest r) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    private DID getLocalDID(io.onemfive.did.GetLocalDIDRequest r) {
         if(localUserDIDs.containsKey(r.did.getAlias()))
             return localUserDIDs.get(r.did.getAlias());
         if(r.did.getPassphrase() == null) {
@@ -229,7 +198,7 @@ public class DIDService extends BaseService {
      * If master key is not present, one will be created by the Key Ring Service.
      * @param did DID
      */
-    private DID create(DID did) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    private DID create(DID did) {
         LOG.info("Received create DID request.");
         did.setPassphraseHash(HashUtil.generateHash(did.getPassphrase()));
         did.setAuthenticated(true);
@@ -247,7 +216,7 @@ public class DIDService extends BaseService {
      * Authenticates passphrase
      * @param r AuthenticateDIDRequest
      */
-    private void authenticate(AuthenticateDIDRequest r) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    private void authenticate(AuthenticateDIDRequest r) {
         LoadDIDDAO dao = new LoadDIDDAO(infoVaultDB, r.did);
         dao.execute();
         DID loadedDID = dao.getLoadedDID();
@@ -271,7 +240,7 @@ public class DIDService extends BaseService {
         }
     }
 
-    private void authenticateOrCreate(AuthenticateDIDRequest r) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    private void authenticateOrCreate(AuthenticateDIDRequest r) {
         r.did = verify(r.did);
         if(!r.did.getVerified()) {
             create(r.did);

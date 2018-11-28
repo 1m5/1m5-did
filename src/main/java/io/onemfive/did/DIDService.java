@@ -70,28 +70,28 @@ public class DIDService extends BaseService {
         switch(route.getOperation()) {
             case OPERATION_GET_LOCAL_DID: {
                 LOG.info("Received get DID request.");
-                io.onemfive.did.GetLocalDIDRequest r = (io.onemfive.did.GetLocalDIDRequest)DLC.getData(io.onemfive.did.GetLocalDIDRequest.class,e);
+                GetLocalDIDRequest r = (GetLocalDIDRequest)DLC.getData(GetLocalDIDRequest.class,e);
                 if(r == null) {
-                    r = new io.onemfive.did.GetLocalDIDRequest();
-                    r.errorCode = io.onemfive.did.GetLocalDIDRequest.REQUEST_REQUIRED;
-                    DLC.addData(io.onemfive.did.GetLocalDIDRequest.class,r,e);
+                    r = new GetLocalDIDRequest();
+                    r.errorCode = GetLocalDIDRequest.REQUEST_REQUIRED;
+                    DLC.addData(GetLocalDIDRequest.class,r,e);
                     break;
                 }
                 if(r.did == null) {
-                    r.errorCode = io.onemfive.did.GetLocalDIDRequest.DID_REQUIRED;
+                    r.errorCode = GetLocalDIDRequest.DID_REQUIRED;
                     break;
                 }
                 if(r.did.getAlias() == null) {
-                    r.errorCode = io.onemfive.did.GetLocalDIDRequest.DID_ALIAS_REQUIRED;
+                    r.errorCode = GetLocalDIDRequest.DID_ALIAS_REQUIRED;
                     break;
                 }
                 try {
                     r.did = getLocalDID(r);
                 } catch (NoSuchAlgorithmException e1) {
-                    r.errorCode = io.onemfive.did.GetLocalDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_UNKNOWN;
+                    r.errorCode = GetLocalDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_UNKNOWN;
                     break;
                 } catch (InvalidKeySpecException e1) {
-                    r.errorCode = io.onemfive.did.GetLocalDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_UNKNOWN;
+                    r.errorCode = GetLocalDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_UNKNOWN;
                     LOG.warning(e1.getLocalizedMessage());
                     break;
                 }

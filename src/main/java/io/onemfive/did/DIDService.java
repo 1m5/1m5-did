@@ -3,11 +3,11 @@ package io.onemfive.did;
 import io.onemfive.core.*;
 import io.onemfive.did.dao.LoadDIDDAO;
 import io.onemfive.did.dao.SaveDIDDAO;
-import io.onemfive.core.util.HashUtil;
 import io.onemfive.data.DID;
 import io.onemfive.data.Envelope;
 import io.onemfive.data.Route;
 import io.onemfive.data.util.DLC;
+import io.onemfive.data.util.HashUtil;
 
 import java.security.SecureRandom;
 import java.util.*;

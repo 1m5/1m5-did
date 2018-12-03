@@ -10,7 +10,7 @@ public class VerifyHashRequest extends ServiceRequest {
     // Request
     public String content;
     public String hashToVerify;
-    public String hashAlgorithm;
+    public boolean isShort = false; // full is default
     // Result
     public boolean isAMatch;
 }

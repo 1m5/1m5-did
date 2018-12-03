@@ -8,7 +8,9 @@ public class HashRequest extends ServiceRequest {
     public static int INVALID_KEY_SPEC = 2;
     // Request
     public String contentToHash;
-    public String hashAlgorithm;
+    public boolean generateFullHash = true; // default
+    public boolean generateShortHash = true; // default
     // Result
-    public String hash;
+    public String fullHash;
+    public String shortHash;
 }

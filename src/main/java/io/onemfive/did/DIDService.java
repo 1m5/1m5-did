@@ -9,10 +9,13 @@ import io.onemfive.data.Route;
 import io.onemfive.data.util.DLC;
 import io.onemfive.data.util.HashUtil;
 
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
+import static io.onemfive.did.HashRequest.UNKNOWN_HASH_ALGORITHM;
 
 /**
  * Decentralized IDentifier (DID) Service
@@ -141,14 +144,27 @@ public class DIDService extends BaseService {
             }
             case OPERATION_HASH: {
                 HashRequest r = (HashRequest)DLC.getData(HashRequest.class,e);
-                r.hash = HashUtil.generateHash(r.contentToHash);
+                try {
+                    if(r.generateFullHash)
+                        r.fullHash = HashUtil.generateHash(r.contentToHash);
+                    if(r.generateShortHash)
+                        r.shortHash = HashUtil.generateShortHash(r.contentToHash);
+                } catch (NoSuchAlgorithmException e1) {
+                    r.errorCode = UNKNOWN_HASH_ALGORITHM;
+                }
                 break;
             }
             case OPERATION_VERIFY_HASH:{
                 VerifyHashRequest r = (VerifyHashRequest)DLC.getData(VerifyHashRequest.class,e);
-                Boolean isMath = HashUtil.verifyHash(r.content, r.hashToVerify);
-                if(isMath != null)
-                    r.isAMatch = isMath;
+                try {
+                    if(r.isShort) {
+                        r.isAMatch = HashUtil.verifyShortHash(r.content.getBytes(), r.hashToVerify);
+                    } else {
+                        r.isAMatch = HashUtil.verifyHash(r.content, r.hashToVerify);
+                    }
+                } catch (NoSuchAlgorithmException e1) {
+                    r.errorCode = UNKNOWN_HASH_ALGORITHM;
+                }
                 break;
             }
             default: deadLetter(e); // Operation not supported
@@ -200,7 +216,12 @@ public class DIDService extends BaseService {
      */
     private DID create(DID did) {
         LOG.info("Received create DID request.");
-        did.setPassphraseHash(HashUtil.generateHash(did.getPassphrase()));
+        try {
+            did.setPassphraseHash(HashUtil.generateHash(did.getPassphrase()));
+        } catch (NoSuchAlgorithmException e) {
+            LOG.warning("Hashing Algorithm not supported while creating DID\n"+e.getLocalizedMessage());
+            return did;
+        }
         did.setAuthenticated(true);
         did.setVerified(true);
         did.setStatus(DID.Status.ACTIVE);

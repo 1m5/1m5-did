@@ -225,11 +225,13 @@ public class DIDService extends BaseService {
         did.setAuthenticated(true);
         did.setVerified(true);
         did.setStatus(DID.Status.ACTIVE);
+        LOG.info("Saving DID...");
         SaveDIDDAO dao = new SaveDIDDAO(infoVaultDB, did, true);
         dao.execute();
         if(dao.getException() != null) {
             LOG.warning("Create DID threw exception: "+dao.getException().getLocalizedMessage());
         }
+        LOG.info("DID saved.");
         return did;
     }
 

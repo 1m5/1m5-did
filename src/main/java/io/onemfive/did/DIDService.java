@@ -82,8 +82,8 @@ public class DIDService extends BaseService {
                     r.errorCode = GetLocalDIDRequest.DID_REQUIRED;
                     break;
                 }
-                if(r.did.getAlias() == null) {
-                    r.errorCode = GetLocalDIDRequest.DID_ALIAS_REQUIRED;
+                if(r.did.getUsername() == null) {
+                    r.errorCode = GetLocalDIDRequest.DID_USERNAME_REQUIRED;
                     break;
                 }
                 r.did = getLocalDID(r);
@@ -114,8 +114,8 @@ public class DIDService extends BaseService {
                     r.errorCode = AuthenticateDIDRequest.DID_REQUIRED;
                     break;
                 }
-                if(r.did.getAlias() == null) {
-                    r.errorCode = AuthenticateDIDRequest.DID_ALIAS_REQUIRED;
+                if(r.did.getUsername() == null) {
+                    r.errorCode = AuthenticateDIDRequest.DID_USERNAME_REQUIRED;
                     break;
                 }
                 if(r.did.getPassphrase() == null) {
@@ -172,8 +172,8 @@ public class DIDService extends BaseService {
     }
 
     private DID getLocalDID(io.onemfive.did.GetLocalDIDRequest r) {
-        if(localUserDIDs.containsKey(r.did.getAlias()))
-            return localUserDIDs.get(r.did.getAlias());
+        if(localUserDIDs.containsKey(r.did.getUsername()))
+            return localUserDIDs.get(r.did.getUsername());
         if(r.did.getPassphrase() == null) {
             r.errorCode = io.onemfive.did.GetLocalDIDRequest.DID_PASSPHRASE_REQUIRED;
             return r.did;
@@ -198,7 +198,7 @@ public class DIDService extends BaseService {
         LoadDIDDAO dao = new LoadDIDDAO(infoVaultDB, did);
         dao.execute();
         DID didLoaded = dao.getLoadedDID();
-        if(didLoaded != null && did.getAlias() != null && did.getAlias().equals(didLoaded.getAlias())) {
+        if(didLoaded != null && did.getUsername() != null && did.getUsername().equals(didLoaded.getUsername())) {
             didLoaded.setVerified(true);
             LOG.info("DID verification successful.");
             return didLoaded;
@@ -243,8 +243,8 @@ public class DIDService extends BaseService {
         LoadDIDDAO dao = new LoadDIDDAO(infoVaultDB, r.did);
         dao.execute();
         DID loadedDID = dao.getLoadedDID();
-        if(loadedDID == null || loadedDID.getAlias() == null || loadedDID.getAlias().isEmpty()) {
-            r.errorCode = AuthenticateDIDRequest.DID_ALIAS_UNKNOWN;
+        if(loadedDID == null || loadedDID.getUsername() == null || loadedDID.getUsername().isEmpty()) {
+            r.errorCode = AuthenticateDIDRequest.DID_USERNAME_UNKNOWN;
             r.did.setAuthenticated(false);
             return;
         }
@@ -298,5 +298,13 @@ public class DIDService extends BaseService {
     public boolean gracefulShutdown() {
         return shutdown();
     }
+
+//    public static void main(String[] args) {
+//        DIDService service = new DIDService();
+//        DID did = new DID();
+//        did.setAlias("Alice");
+//        did.setPassphrase("1234");
+//        service.create(did);
+//    }
 
 }

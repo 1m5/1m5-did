@@ -20,8 +20,6 @@ public class SaveDIDDAO extends LocalFSDAO {
 
     @Override
     public void execute() {
-        // ensure password is cleared
-        didToSave.setPassphrase("");
         try {
             infoVaultDB.save(
                     DID.class.getName(),

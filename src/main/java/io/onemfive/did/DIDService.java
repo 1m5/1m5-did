@@ -1,6 +1,8 @@
 package io.onemfive.did;
 
 import io.onemfive.core.*;
+import io.onemfive.core.keyring.AuthNRequest;
+import io.onemfive.core.keyring.GenerateKeyRingCollectionsRequest;
 import io.onemfive.did.dao.LoadDIDDAO;
 import io.onemfive.did.dao.SaveDIDDAO;
 import io.onemfive.data.DID;
@@ -28,7 +30,7 @@ public class DIDService extends BaseService {
 
     public static final String OPERATION_VERIFY = "VERIFY";
     public static final String OPERATION_AUTHENTICATE = "AUTHENTICATE";
-    public static final String OPERATION_CREATE = "CREATE";
+    public static final String OPERATION_SAVE = "SAVE";
     public static final String OPERATION_AUTHENTICATE_CREATE = "AUTHENTICATE_CREATE";
     public static final String OPERATION_REVOKE = "REVOKE";
     public static final String OPERATION_HASH = "HASH";
@@ -125,12 +127,21 @@ public class DIDService extends BaseService {
                 authenticate(r);
                 if(r.did.getAuthenticated()) {
                     e.setDID(r.did);
+                    AuthNRequest ar = (AuthNRequest)DLC.getData(AuthNRequest.class,e);
+                    if(ar!=null && ar.publicKey!=null)
+                        r.did.addPublicKey(ar.publicKey);
                 }
                 break;
             }
-            case OPERATION_CREATE: {
+            case OPERATION_SAVE: {
+                LOG.info("Received save DID request.");
                 DID did = (DID)DLC.getData(DID.class,e);
-                e.setDID(create(did));
+                GenerateKeyRingCollectionsRequest gkr = (GenerateKeyRingCollectionsRequest) DLC.getData(GenerateKeyRingCollectionsRequest.class,e);
+                if(gkr!=null && gkr.publicKey!=null){
+                    LOG.info("LoadKeyRingsRequest found in envelope...updating DID...");
+                    did.addPublicKey(gkr.publicKey);
+                }
+                e.setDID(save(did));
                 break;
             }
             case OPERATION_AUTHENTICATE_CREATE: {
@@ -139,7 +150,7 @@ public class DIDService extends BaseService {
                 break;
             }
             case OPERATION_REVOKE: {
-
+                LOG.warning("REVOKE not implemented.");
                 break;
             }
             case OPERATION_HASH: {
@@ -182,7 +193,7 @@ public class DIDService extends BaseService {
             r.errorCode = io.onemfive.did.GetLocalDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_UNKNOWN;
             return r.did;
         }
-        return create(r.did);
+        return save(r.did);
     }
 
     private void addContact(Envelope e) {
@@ -210,21 +221,21 @@ public class DIDService extends BaseService {
     }
 
     /**
-     * Creates and returns identity key using master key for provided alias if one does not exist.
-     * If master key is not present, one will be created by the Key Ring Service.
+     * Saves and returns DID generating passphrase hash if none exists.
      * @param did DID
      */
-    private DID create(DID did) {
-        LOG.info("Received create DID request.");
-        try {
-            did.setPassphraseHash(HashUtil.generateHash(did.getPassphrase()));
-        } catch (NoSuchAlgorithmException e) {
-            LOG.warning("Hashing Algorithm not supported while creating DID\n"+e.getLocalizedMessage());
-            return did;
+    private DID save(DID did) {
+        if(did.getPassphraseHash() == null) {
+            LOG.info("Hashing passphrase...");
+            try {
+                did.setPassphraseHash(HashUtil.generateHash(did.getPassphrase()));
+                // ensure passphrase is cleared
+                did.setPassphrase(null);
+            } catch (NoSuchAlgorithmException e) {
+                LOG.warning("Hashing Algorithm not supported while saving DID\n" + e.getLocalizedMessage());
+                return did;
+            }
         }
-        did.setAuthenticated(true);
-        did.setVerified(true);
-        did.setStatus(DID.Status.ACTIVE);
         LOG.info("Saving DID...");
         SaveDIDDAO dao = new SaveDIDDAO(infoVaultDB, did, true);
         dao.execute();
@@ -266,10 +277,17 @@ public class DIDService extends BaseService {
     private void authenticateOrCreate(AuthenticateDIDRequest r) {
         r.did = verify(r.did);
         if(!r.did.getVerified()) {
-            create(r.did);
+            save(r.did);
         } else {
             authenticate(r);
         }
+    }
+
+    private boolean isNew(DID didToLoad) {
+        LoadDIDDAO dao = new LoadDIDDAO(infoVaultDB, didToLoad);
+        dao.execute();
+        DID loadedDID = dao.getLoadedDID();
+        return loadedDID == null || loadedDID.getUsername() == null || loadedDID.getUsername().isEmpty();
     }
 
     @Override

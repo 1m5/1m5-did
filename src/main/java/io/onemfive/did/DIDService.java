@@ -70,7 +70,8 @@ public class DIDService extends BaseService {
 
     private void handleAll(Envelope e) {
         Route route = e.getRoute();
-        switch(route.getOperation()) {
+        String operation = route.getOperation();
+        switch(operation) {
             case OPERATION_GET_LOCAL_DID: {
                 LOG.info("Received get DID request.");
                 GetLocalDIDRequest r = (GetLocalDIDRequest)DLC.getData(GetLocalDIDRequest.class,e);
@@ -124,25 +125,29 @@ public class DIDService extends BaseService {
                     r.errorCode = AuthenticateDIDRequest.DID_PASSPHRASE_REQUIRED;
                     break;
                 }
+                AuthNRequest ar = (AuthNRequest)DLC.getData(AuthNRequest.class,e);
+                GenerateKeyRingCollectionsRequest gkr = (GenerateKeyRingCollectionsRequest) DLC.getData(GenerateKeyRingCollectionsRequest.class,e);
+                if(ar!=null && ar.publicKey!=null)
+                    r.did.addPublicKey(ar.publicKey);
+                else if(gkr!=null && gkr.publicKey!=null)
+                    r.did.addPublicKey(gkr.publicKey);
                 authenticate(r);
                 if(r.did.getAuthenticated()) {
                     e.setDID(r.did);
-                    AuthNRequest ar = (AuthNRequest)DLC.getData(AuthNRequest.class,e);
-                    if(ar!=null && ar.publicKey!=null)
-                        r.did.addPublicKey(ar.publicKey);
+                    break;
+                } else if(r.errorCode == AuthenticateDIDRequest.DID_USERNAME_UNKNOWN && r.autogenerate) {
+                    LOG.info("Username unknown and autogenerate is true so save DID...");
+                    r.did.setAuthenticated(true); // true because we're going to create it
+                    save(r.did, r.autogenerate);
+                    break;
+                } else {
+                    break;
                 }
-                break;
             }
             case OPERATION_SAVE: {
                 LOG.info("Received save DID request.");
                 DID did = (DID)DLC.getData(DID.class,e);
-                GenerateKeyRingCollectionsRequest gkr = (GenerateKeyRingCollectionsRequest) DLC.getData(GenerateKeyRingCollectionsRequest.class,e);
-                if(gkr!=null && gkr.publicKey!=null){
-                    LOG.info("LoadKeyRingsRequest found in envelope...updating DID...");
-                    did.setAuthenticated(true);
-                    did.addPublicKey(gkr.publicKey);
-                }
-                e.setDID(save(did));
+                e.setDID(save(did, true));
                 break;
             }
             case OPERATION_AUTHENTICATE_CREATE: {
@@ -183,18 +188,18 @@ public class DIDService extends BaseService {
         }
     }
 
-    private DID getLocalDID(io.onemfive.did.GetLocalDIDRequest r) {
+    private DID getLocalDID(GetLocalDIDRequest r) {
         if(localUserDIDs.containsKey(r.did.getUsername()))
             return localUserDIDs.get(r.did.getUsername());
         if(r.did.getPassphrase() == null) {
-            r.errorCode = io.onemfive.did.GetLocalDIDRequest.DID_PASSPHRASE_REQUIRED;
+            r.errorCode = GetLocalDIDRequest.DID_PASSPHRASE_REQUIRED;
             return r.did;
         }
         if(r.did.getPassphraseHashAlgorithm() == null) {
-            r.errorCode = io.onemfive.did.GetLocalDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_UNKNOWN;
+            r.errorCode = GetLocalDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_UNKNOWN;
             return r.did;
         }
-        return save(r.did);
+        return save(r.did, true);
     }
 
     private void addContact(Envelope e) {
@@ -225,20 +230,20 @@ public class DIDService extends BaseService {
      * Saves and returns DID generating passphrase hash if none exists.
      * @param did DID
      */
-    private DID save(DID did) {
+    private DID save(DID did, boolean autocreate) {
+        LOG.info("Saving DID...");
         if(did.getPassphraseHash() == null) {
             LOG.info("Hashing passphrase...");
             try {
                 did.setPassphraseHash(HashUtil.generateHash(did.getPassphrase()));
                 // ensure passphrase is cleared
                 did.setPassphrase(null);
-            } catch (NoSuchAlgorithmException e) {
-                LOG.warning("Hashing Algorithm not supported while saving DID\n" + e.getLocalizedMessage());
+            } catch (NoSuchAlgorithmException ex) {
+                LOG.warning("Hashing Algorithm not supported while saving DID\n" + ex.getLocalizedMessage());
                 return did;
             }
         }
-        LOG.info("Saving DID...");
-        SaveDIDDAO dao = new SaveDIDDAO(infoVaultDB, did, true);
+        SaveDIDDAO dao = new SaveDIDDAO(infoVaultDB, did, autocreate);
         dao.execute();
         if(dao.getException() != null) {
             LOG.warning("Create DID threw exception: "+dao.getException().getLocalizedMessage());
@@ -256,11 +261,13 @@ public class DIDService extends BaseService {
         dao.execute();
         DID loadedDID = dao.getLoadedDID();
         if(loadedDID == null || loadedDID.getUsername() == null || loadedDID.getUsername().isEmpty()) {
+            LOG.info("Username unknown.");
             r.errorCode = AuthenticateDIDRequest.DID_USERNAME_UNKNOWN;
             r.did.setAuthenticated(false);
             return;
         }
         if(!r.did.getPassphraseHashAlgorithm().equals(loadedDID.getPassphraseHashAlgorithm())) {
+            LOG.warning("Hash algorithm mismatch.");
             r.errorCode = AuthenticateDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_MISMATCH;
             r.did.setAuthenticated(false);
             return;
@@ -278,7 +285,7 @@ public class DIDService extends BaseService {
     private void authenticateOrCreate(AuthenticateDIDRequest r) {
         r.did = verify(r.did);
         if(!r.did.getVerified()) {
-            save(r.did);
+            save(r.did, true);
         } else {
             authenticate(r);
         }

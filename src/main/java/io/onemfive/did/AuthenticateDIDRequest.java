@@ -15,6 +15,7 @@ public class AuthenticateDIDRequest extends ServiceRequest {
     public static final int DID_PASSPHRASE_MISMATCH = 7;
     public static final int DID_TOKEN_FORMAT_MISMATCH = 8;
 
+    public boolean autogenerate = false;
     public DID did;
 
     @Override

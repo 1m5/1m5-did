@@ -14,7 +14,7 @@ public class LoadDIDDAO extends LocalFSDAO {
     private Logger LOG = Logger.getLogger(LoadDIDDAO.class.getName());
 
     private DID providedDID;
-    private DID loadedDID;
+    private DID loadedDID = new DID();
 
     public LoadDIDDAO(InfoVaultDB infoVaultDB, DID did) {
         super(infoVaultDB);
@@ -32,7 +32,6 @@ public class LoadDIDDAO extends LocalFSDAO {
         }
         String jsonBody = new String(content);
         LOG.info("JSON loaded: "+jsonBody);
-        loadedDID = new DID();
         loadedDID.fromMap((Map<String,Object>)JSONParser.parse(jsonBody));
     }
 

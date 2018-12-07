@@ -139,6 +139,7 @@ public class DIDService extends BaseService {
                 GenerateKeyRingCollectionsRequest gkr = (GenerateKeyRingCollectionsRequest) DLC.getData(GenerateKeyRingCollectionsRequest.class,e);
                 if(gkr!=null && gkr.publicKey!=null){
                     LOG.info("LoadKeyRingsRequest found in envelope...updating DID...");
+                    did.setAuthenticated(true);
                     did.addPublicKey(gkr.publicKey);
                 }
                 e.setDID(save(did));

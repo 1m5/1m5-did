@@ -43,9 +43,8 @@ public class DIDService extends BaseService {
 
     private static SecureRandom random = new SecureRandom();
 
-    private DID localDefaultDID;
+    private DID nodeDID;
     private Map<String,DID> localUserDIDs = new HashMap<>();
-    private Map<String,DID> contacts = new HashMap<>();
 
     public DIDService() {}
 
@@ -139,6 +138,7 @@ public class DIDService extends BaseService {
                     LOG.info("Username unknown and autogenerate is true so save DID...");
                     r.did.setAuthenticated(true); // true because we're going to create it
                     save(r.did, r.autogenerate);
+                    localUserDIDs.put(r.did.getUsername(),r.did);
                     break;
                 } else {
                     break;
@@ -279,6 +279,7 @@ public class DIDService extends BaseService {
         if(r.did.getAuthenticated()) {
             r.did = loadedDID;
             r.did.setAuthenticated(true);
+            localUserDIDs.put(r.did.getUsername(),r.did);
         }
     }
 

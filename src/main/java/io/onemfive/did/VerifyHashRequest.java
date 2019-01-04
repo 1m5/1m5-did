@@ -1,6 +1,7 @@
 package io.onemfive.did;
 
 import io.onemfive.core.ServiceRequest;
+import io.onemfive.data.Hash;
 
 public class VerifyHashRequest extends ServiceRequest {
 
@@ -9,7 +10,7 @@ public class VerifyHashRequest extends ServiceRequest {
 
     // Request
     public String content;
-    public String hashToVerify;
+    public Hash hashToVerify;
     public boolean isShort = false; // full is default
     // Result
     public boolean isAMatch;

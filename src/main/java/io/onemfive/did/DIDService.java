@@ -3,6 +3,7 @@ package io.onemfive.did;
 import io.onemfive.core.*;
 import io.onemfive.core.keyring.AuthNRequest;
 import io.onemfive.core.keyring.GenerateKeyRingCollectionsRequest;
+import io.onemfive.data.Hash;
 import io.onemfive.did.dao.LoadDIDDAO;
 import io.onemfive.did.dao.SaveDIDDAO;
 import io.onemfive.data.DID;
@@ -163,9 +164,9 @@ public class DIDService extends BaseService {
                 HashRequest r = (HashRequest)DLC.getData(HashRequest.class,e);
                 try {
                     if(r.generateFullHash)
-                        r.fullHash = HashUtil.generateHash(r.contentToHash);
+                        r.fullHash = HashUtil.generateHash(r.contentToHash, Hash.Algorithm.SHA512);
                     if(r.generateShortHash)
-                        r.shortHash = HashUtil.generateShortHash(r.contentToHash);
+                        r.shortHash = HashUtil.generateHash(r.contentToHash, Hash.Algorithm.SHA256);
                 } catch (NoSuchAlgorithmException e1) {
                     r.errorCode = UNKNOWN_HASH_ALGORITHM;
                 }
@@ -174,11 +175,7 @@ public class DIDService extends BaseService {
             case OPERATION_VERIFY_HASH:{
                 VerifyHashRequest r = (VerifyHashRequest)DLC.getData(VerifyHashRequest.class,e);
                 try {
-                    if(r.isShort) {
-                        r.isAMatch = HashUtil.verifyShortHash(r.content.getBytes(), r.hashToVerify);
-                    } else {
-                        r.isAMatch = HashUtil.verifyHash(r.content, r.hashToVerify);
-                    }
+                    r.isAMatch = HashUtil.verifyHash(r.content, r.hashToVerify);
                 } catch (NoSuchAlgorithmException e1) {
                     r.errorCode = UNKNOWN_HASH_ALGORITHM;
                 }
@@ -235,7 +232,7 @@ public class DIDService extends BaseService {
         if(did.getPassphraseHash() == null) {
             LOG.info("Hashing passphrase...");
             try {
-                did.setPassphraseHash(HashUtil.generateHash(did.getPassphrase()));
+                did.setPassphraseHash(HashUtil.generatePasswordHash(did.getPassphrase()));
                 // ensure passphrase is cleared
                 did.setPassphrase(null);
             } catch (NoSuchAlgorithmException ex) {
@@ -272,8 +269,13 @@ public class DIDService extends BaseService {
             r.did.setAuthenticated(false);
             return;
         }
-        String passphraseHash = loadedDID.getPassphraseHash();
-        Boolean authN = HashUtil.verifyHash(r.did.getPassphrase(), passphraseHash);
+        Boolean authN = null;
+        try {
+            authN = HashUtil.verifyPasswordHash(r.did.getPassphrase(), loadedDID.getPassphraseHash());
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            LOG.warning(e.getLocalizedMessage());
+        }
         LOG.info("AuthN: "+(authN != null && authN));
         r.did.setAuthenticated(authN != null && authN);
         if(r.did.getAuthenticated()) {

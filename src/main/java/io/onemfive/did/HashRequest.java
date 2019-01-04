@@ -1,6 +1,7 @@
 package io.onemfive.did;
 
 import io.onemfive.core.ServiceRequest;
+import io.onemfive.data.Hash;
 
 public class HashRequest extends ServiceRequest {
 
@@ -11,6 +12,6 @@ public class HashRequest extends ServiceRequest {
     public boolean generateFullHash = true; // default
     public boolean generateShortHash = true; // default
     // Result
-    public String fullHash;
-    public String shortHash;
+    public Hash fullHash;
+    public Hash shortHash;
 }

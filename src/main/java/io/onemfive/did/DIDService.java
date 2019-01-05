@@ -108,20 +108,24 @@ public class DIDService extends BaseService {
                 LOG.info("Received authn DID request.");
                 AuthenticateDIDRequest r = (AuthenticateDIDRequest)DLC.getData(AuthenticateDIDRequest.class,e);
                 if(r == null) {
+                    LOG.warning("Request required.");
                     r = new AuthenticateDIDRequest();
                     r.errorCode = AuthenticateDIDRequest.REQUEST_REQUIRED;
                     DLC.addData(AuthenticateDIDRequest.class,r,e);
                     break;
                 }
                 if(r.did == null) {
+                    LOG.warning("DID required.");
                     r.errorCode = AuthenticateDIDRequest.DID_REQUIRED;
                     break;
                 }
                 if(r.did.getUsername() == null) {
+                    LOG.info("Username required.");
                     r.errorCode = AuthenticateDIDRequest.DID_USERNAME_REQUIRED;
                     break;
                 }
                 if(r.did.getPassphrase() == null) {
+                    LOG.info("Passphrase required.");
                     r.errorCode = AuthenticateDIDRequest.DID_PASSPHRASE_REQUIRED;
                     break;
                 }
@@ -133,17 +137,30 @@ public class DIDService extends BaseService {
                     r.did.addPublicKey(gkr.publicKey);
                 authenticate(r);
                 if(r.did.getAuthenticated()) {
+                    LOG.info("DID Authenticated, setting DID in header.");
                     e.setDID(r.did);
+                    if(nodeDID==null || nodeDID.equals(r.did)) {
+                        // first authentication is the node itself
+                        LOG.info("First authn is node or this is node authn - caching.");
+                        nodeDID = r.did;
+                    } else if(!nodeDID.equals(r.did))
+                        LOG.info("Local user DID cached.");
+                        localUserDIDs.put(r.did.getUsername(),r.did);
                     break;
                 } else if(r.errorCode == AuthenticateDIDRequest.DID_USERNAME_UNKNOWN && r.autogenerate) {
-                    LOG.info("Username unknown and autogenerate is true so save DID...");
+                    LOG.info("Username unknown and autogenerate is true so save DID as authenticated...");
                     r.did.setAuthenticated(true); // true because we're going to create it
                     save(r.did, r.autogenerate);
-                    localUserDIDs.put(r.did.getUsername(),r.did);
-                    break;
-                } else {
+                    if(nodeDID==null || nodeDID.equals(r.did)) {
+                        // first authentication is the node itself
+                        LOG.info("First authn is node or this is node authn - caching.");
+                        nodeDID = r.did;
+                    } else
+                        LOG.info("Local user DID cached.");
+                        localUserDIDs.put(r.did.getUsername(),r.did);
                     break;
                 }
+                break;
             }
             case OPERATION_SAVE: {
                 LOG.info("Received save DID request.");
@@ -186,6 +203,8 @@ public class DIDService extends BaseService {
     }
 
     private DID getLocalDID(GetLocalDIDRequest r) {
+        if(nodeDID!=null)
+            return nodeDID;
         if(localUserDIDs.containsKey(r.did.getUsername()))
             return localUserDIDs.get(r.did.getUsername());
         if(r.did.getPassphrase() == null) {
@@ -257,19 +276,17 @@ public class DIDService extends BaseService {
         LoadDIDDAO dao = new LoadDIDDAO(infoVaultDB, r.did);
         dao.execute();
         DID loadedDID = dao.getLoadedDID();
+        LOG.info("Loaded DID: "+loadedDID);
         if(loadedDID == null || loadedDID.getUsername() == null || loadedDID.getUsername().isEmpty()) {
             LOG.info("Username unknown.");
             r.errorCode = AuthenticateDIDRequest.DID_USERNAME_UNKNOWN;
             r.did.setAuthenticated(false);
             return;
         }
-        if(!r.did.getPassphraseHashAlgorithm().equals(loadedDID.getPassphraseHashAlgorithm())) {
-            LOG.warning("Hash algorithm mismatch.");
-            r.errorCode = AuthenticateDIDRequest.DID_PASSPHRASE_HASH_ALGORITHM_MISMATCH;
-            r.did.setAuthenticated(false);
-            return;
-        }
+        LOG.info("Username available.");
+        LOG.info("Passphrase Hash Algorithm: "+loadedDID.getPassphraseHashAlgorithm());
         Boolean authN = null;
+        LOG.info("Verifying password hash...");
         try {
             authN = HashUtil.verifyPasswordHash(r.did.getPassphrase(), loadedDID.getPassphraseHash());
         } catch (NoSuchAlgorithmException e) {

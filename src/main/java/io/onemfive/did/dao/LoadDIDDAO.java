@@ -33,6 +33,7 @@ public class LoadDIDDAO extends LocalFSDAO {
         String jsonBody = new String(content);
         LOG.info("JSON loaded: "+jsonBody);
         loadedDID.fromMap((Map<String,Object>)JSONParser.parse(jsonBody));
+        LOG.info("DID Loaded from map.");
     }
 
     public DID getLoadedDID() {

@@ -11,7 +11,9 @@ public class HashRequest extends ServiceRequest {
     public String contentToHash;
     public boolean generateFullHash = true; // default
     public boolean generateShortHash = true; // default
+    public boolean generateFingerprint = true; // default
     // Result
     public Hash fullHash;
     public Hash shortHash;
+    public Hash fingerprint;
 }

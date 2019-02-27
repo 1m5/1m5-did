@@ -184,6 +184,9 @@ public class DIDService extends BaseService {
                         r.fullHash = HashUtil.generateHash(r.contentToHash, Hash.Algorithm.SHA512);
                     if(r.generateShortHash)
                         r.shortHash = HashUtil.generateHash(r.contentToHash, Hash.Algorithm.SHA256);
+                    if(r.generateFingerprint && r.fullHash != null) {
+                        r.fingerprint = HashUtil.generateHash(r.fullHash.getHash(), Hash.Algorithm.SHA1);
+                    }
                 } catch (NoSuchAlgorithmException e1) {
                     r.errorCode = UNKNOWN_HASH_ALGORITHM;
                 }

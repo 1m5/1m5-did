@@ -131,10 +131,10 @@ public class DIDService extends BaseService {
                 }
                 AuthNRequest ar = (AuthNRequest)DLC.getData(AuthNRequest.class,e);
                 GenerateKeyRingCollectionsRequest gkr = (GenerateKeyRingCollectionsRequest) DLC.getData(GenerateKeyRingCollectionsRequest.class,e);
-                if(ar!=null && ar.publicKey!=null)
-                    r.did.addPublicKey(ar.publicKey);
-                else if(gkr!=null && gkr.publicKey!=null)
-                    r.did.addPublicKey(gkr.publicKey);
+                if(ar!=null && ar.identityPublicKey!=null)
+                    r.did.addPublicKey(ar.identityPublicKey);
+                else if(gkr!=null && gkr.identityPublicKey!=null)
+                    r.did.addPublicKey(gkr.identityPublicKey);
                 authenticate(r);
                 if(r.did.getAuthenticated()) {
                     LOG.info("DID Authenticated, setting DID in header.");

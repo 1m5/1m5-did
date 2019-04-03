@@ -1,5 +1,8 @@
 # Decentralized IDentification (DID) Service
-Implementing [Web Of Trust](https://en.wikipedia.org/wiki/Web_of_trust) with Self Sovereign Identity
+Implementing [Web Of Trust](https://en.wikipedia.org/wiki/Web_of_trust) with Self Sovereign Identity.
+
+[W3C DID Specification](https://w3c-ccg.github.io/did-spec/) used as a guideline to ensure interoperability with other DID
+implementations.
  
 Uses Key Ring Service to Manage the Physical Persistence, Generation, Encryption, Decryption, Revocation, and Destruction of Keys
 

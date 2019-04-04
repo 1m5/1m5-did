@@ -29,14 +29,17 @@ public class DIDService extends BaseService {
 
     private static final Logger LOG = Logger.getLogger(DIDService.class.getName());
 
-    public static final String OPERATION_VERIFY = "VERIFY";
+    public static final String OPERATION_GET_LOCAL_DID = "GET_LOCAL_DID"; // Read Local
+    public static final String OPERATION_VERIFY = "VERIFY"; // Read/Verify
+    public static final String OPERATION_SAVE = "SAVE"; // Create/Update
+    public static final String OPERATION_REVOKE = "REVOKE"; // Deactivate
+
     public static final String OPERATION_AUTHENTICATE = "AUTHENTICATE";
-    public static final String OPERATION_SAVE = "SAVE";
     public static final String OPERATION_AUTHENTICATE_CREATE = "AUTHENTICATE_CREATE";
-    public static final String OPERATION_REVOKE = "REVOKE";
+
     public static final String OPERATION_HASH = "HASH";
     public static final String OPERATION_VERIFY_HASH = "VERIFY_HASH";
-    public static final String OPERATION_GET_LOCAL_DID = "GET_LOCAL_DID";
+
     public static final String OPERATION_ADD_CONTACT = "ADD_CONTACT";
     public static final String OPERATION_GET_CONTACT = "GET_CONTACT";
 

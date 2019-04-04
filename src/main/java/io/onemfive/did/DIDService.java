@@ -23,6 +23,8 @@ import static io.onemfive.did.HashRequest.UNKNOWN_HASH_ALGORITHM;
 /**
  * Decentralized IDentifier (DID) Service
  *
+ * Implementation of W3C Spec {@link "https://w3c-ccg.github.io/did-spec/} ongoing.
+ *
  * @author objectorange
  */
 public class DIDService extends BaseService {

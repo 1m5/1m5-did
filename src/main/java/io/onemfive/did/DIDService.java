@@ -289,7 +289,7 @@ public class DIDService extends BaseService {
             r.did.setAuthenticated(false);
             return;
         }
-        LOG.info("Username available.");
+        LOG.info("Username known.");
         LOG.info("Passphrase Hash Algorithm: "+loadedDID.getPassphraseHashAlgorithm());
         Boolean authN = null;
         LOG.info("Verifying password hash...");

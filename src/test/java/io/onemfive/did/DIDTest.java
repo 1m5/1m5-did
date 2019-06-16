@@ -1,9 +1,10 @@
 package io.onemfive.did;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-
-import java.util.concurrent.CountDownLatch;
+import io.onemfive.data.Hash;
+import io.onemfive.data.util.HashUtil;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * TODO: Add Description
@@ -12,25 +13,32 @@ import java.util.concurrent.CountDownLatch;
  */
 public class DIDTest {
 
-    private static CountDownLatch lock;
-    private static DIDService service;
-
-    @BeforeClass
-    public static void startUp() {
-//        service = new DIDService(null,null);
-//        service.start(null);
-    }
-
-    public void testCreate() {
+    @Before
+    public void startUp() {
 
     }
 
-    @AfterClass
-    public static void tearDown() {
-//        try {
-//            lock.await(5, TimeUnit.SECONDS);
-//        } catch (InterruptedException e) {}
-//
+    @Test
+    public void testAuthn() {
+        String alias = "Alice";
+        String passphrase = "1234";
+        boolean aliasVerified = false;
+        boolean passphraseVerified = false;
+        try {
+            Hash aliasHash = HashUtil.generateHash(alias, Hash.Algorithm.SHA1);
+            aliasVerified = HashUtil.verifyHash(alias, aliasHash);
+            Hash passphraseHash = HashUtil.generatePasswordHash(passphrase);
+            passphraseVerified = HashUtil.verifyPasswordHash(passphrase, passphraseHash);
+        } catch(Exception e) {
+            System.out.println(e.getLocalizedMessage());
+        }
+        assert (aliasVerified);
+        assert (passphraseVerified);
+    }
+
+    @After
+    public void tearDown() {
+
     }
 
 }

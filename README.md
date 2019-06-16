@@ -1,12 +1,15 @@
 # Decentralized IDentification (DID) Service
-Implementing [Web Of Trust](https://en.wikipedia.org/wiki/Web_of_trust) with Self Sovereign Identity
+Implementing [Web Of Trust](https://en.wikipedia.org/wiki/Web_of_trust) with Self Sovereign Identity.
+
+[W3C DID Specification](https://w3c-ccg.github.io/did-spec/) used as a guideline to ensure interoperability with other DID
+implementations.
  
 Uses Key Ring Service to Manage the Physical Persistence, Generation, Encryption, Decryption, Revocation, and Destruction of Keys
 
 ## Bill of Rights
 
 From https://github.com/WebOfTrustInfo/self-sovereign-identity/blob/master/self-sovereign-identity-bill-of-rights.md
-and how we plan on supporting them:
+and how we plan on supporting them.
 
 ### Individuals must be able to establish their existence as a unified identity online and in the physical world
 A unified identity requires that people not only have an online presence, but that presence must function seamlessly
@@ -106,6 +109,22 @@ independent, and free of censorship.
 * Decentralized: 1M5 only uses P2P open source free software systems
 * Independent: 1M5 is a DAO with no jurisdiction oversight, only member oversight
 * Free of Censorship: anonymous highly censorship resistant communications with strong at-rest data encryption
+
+## Design Goals
+We share design goals from the [W3C spec](https://w3c-ccg.github.io/did-spec/#design-goals):
+
+| Goal | Description |
+|------|-------------|
+| Decentralization | DID architecture should eliminate the requirement for centralized authorities or single points of failure in identifier management, including the registration of globally unique identifiers, public verification keys, service endpoints, and other metadata. |
+| Self‑Sovereignty | DID architecture should give entities, both human and non-human, the power to directly own and control their digital identifiers without the need to rely on external authorities. |
+| Privacy | DID architecture should enable entities to control the privacy of their information, including minimal, selective, and progressive disclosure of attributes or other data. |
+| Security | DID architecture should enable sufficient security for relying parties to depend on DID Documents for their required level of assurance. |
+| Proof-based | DID architecture should enable the DID subject to provide cryptographic proof of authentication and proof of authorization rights. |
+| Discoverability | DID architecture should make it possible for entities to discover DIDs for other entities to learn more about or interact with those entities. |
+| Interoperability | DID architecture should use interoperable standards so DID infrastructure can make use of existing tools and software libraries designed for interoperability. |
+| Portability | DID architecture should be system and network-independent and enable entities to use their digital identifiers with any system that supports DIDs and DID Methods. |
+| Simplicity | To meet these design goals, DID architecture should be (to paraphrase Albert Einstein) "as simple as possible but no simpler". |
+| Extensibility | When possible, DID architecture should enable extensibility provided it does not greatly hinder interoperability, portability, or simplicity. |
 
 ## Features and Roadmap
 The DID Service is being implemented as individual projects needs arise.

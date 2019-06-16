@@ -23,20 +23,25 @@ import static io.onemfive.did.HashRequest.UNKNOWN_HASH_ALGORITHM;
 /**
  * Decentralized IDentifier (DID) Service
  *
+ * Implementation of W3C Spec {@link "https://w3c-ccg.github.io/did-spec/} ongoing.
+ *
  * @author objectorange
  */
 public class DIDService extends BaseService {
 
     private static final Logger LOG = Logger.getLogger(DIDService.class.getName());
 
-    public static final String OPERATION_VERIFY = "VERIFY";
+    public static final String OPERATION_GET_LOCAL_DID = "GET_LOCAL_DID"; // Read Local
+    public static final String OPERATION_VERIFY = "VERIFY"; // Read/Verify
+    public static final String OPERATION_SAVE = "SAVE"; // Create/Update
+    public static final String OPERATION_REVOKE = "REVOKE"; // Deactivate
+
     public static final String OPERATION_AUTHENTICATE = "AUTHENTICATE";
-    public static final String OPERATION_SAVE = "SAVE";
     public static final String OPERATION_AUTHENTICATE_CREATE = "AUTHENTICATE_CREATE";
-    public static final String OPERATION_REVOKE = "REVOKE";
+
     public static final String OPERATION_HASH = "HASH";
     public static final String OPERATION_VERIFY_HASH = "VERIFY_HASH";
-    public static final String OPERATION_GET_LOCAL_DID = "GET_LOCAL_DID";
+
     public static final String OPERATION_ADD_CONTACT = "ADD_CONTACT";
     public static final String OPERATION_GET_CONTACT = "GET_CONTACT";
 
@@ -131,10 +136,10 @@ public class DIDService extends BaseService {
                 }
                 AuthNRequest ar = (AuthNRequest)DLC.getData(AuthNRequest.class,e);
                 GenerateKeyRingCollectionsRequest gkr = (GenerateKeyRingCollectionsRequest) DLC.getData(GenerateKeyRingCollectionsRequest.class,e);
-                if(ar!=null && ar.publicKey!=null)
-                    r.did.addPublicKey(ar.publicKey);
-                else if(gkr!=null && gkr.publicKey!=null)
-                    r.did.addPublicKey(gkr.publicKey);
+                if(ar!=null && ar.identityPublicKey!=null)
+                    r.did.addPublicKey(ar.identityPublicKey);
+                else if(gkr!=null && gkr.identityPublicKey!=null)
+                    r.did.addPublicKey(gkr.identityPublicKey);
                 authenticate(r);
                 if(r.did.getAuthenticated()) {
                     LOG.info("DID Authenticated, setting DID in header.");
@@ -180,10 +185,11 @@ public class DIDService extends BaseService {
             case OPERATION_HASH: {
                 HashRequest r = (HashRequest)DLC.getData(HashRequest.class,e);
                 try {
-                    if(r.generateFullHash)
-                        r.fullHash = HashUtil.generateHash(r.contentToHash, Hash.Algorithm.SHA512);
-                    if(r.generateShortHash)
-                        r.shortHash = HashUtil.generateHash(r.contentToHash, Hash.Algorithm.SHA256);
+                    if(r.generateHash)
+                        r.hash = HashUtil.generateHash(r.contentToHash, Hash.Algorithm.SHA256);
+                    if(r.generateFingerprint && r.hash != null) {
+                        r.fingerprint = HashUtil.generateHash(r.hash.getHash(), Hash.Algorithm.SHA1);
+                    }
                 } catch (NoSuchAlgorithmException e1) {
                     r.errorCode = UNKNOWN_HASH_ALGORITHM;
                 }
@@ -283,7 +289,7 @@ public class DIDService extends BaseService {
             r.did.setAuthenticated(false);
             return;
         }
-        LOG.info("Username available.");
+        LOG.info("Username known.");
         LOG.info("Passphrase Hash Algorithm: "+loadedDID.getPassphraseHashAlgorithm());
         Boolean authN = null;
         LOG.info("Verifying password hash...");

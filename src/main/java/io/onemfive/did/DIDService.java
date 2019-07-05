@@ -42,6 +42,8 @@ public class DIDService extends BaseService {
     public static final String OPERATION_HASH = "HASH";
     public static final String OPERATION_VERIFY_HASH = "VERIFY_HASH";
 
+    public static final String OPERATION_VOUCH = "VOUCH";
+
     public static final String OPERATION_ADD_CONTACT = "ADD_CONTACT";
     public static final String OPERATION_GET_CONTACT = "GET_CONTACT";
 
@@ -204,8 +206,28 @@ public class DIDService extends BaseService {
                 }
                 break;
             }
+            case OPERATION_VOUCH:{
+                VouchRequest r = (VouchRequest)DLC.getData(VouchRequest.class,e);
+                if(r.signer==null) {
+                    r.errorCode = VouchRequest.SIGNER_REQUIRED;
+                    break;
+                }
+                if(r.signee==null){
+                    r.errorCode = VouchRequest.SIGNEE_REQUIRED;
+                    break;
+                }
+                if(r.attributesToSign==null) {
+                    r.errorCode = VouchRequest.ATTRIBUTES_REQUIRED;
+                    break;
+                }
+
+            }
             default: deadLetter(e); // Operation not supported
         }
+    }
+
+    private void vouch(VouchRequest request) {
+        // TODO: complete signing attributes
     }
 
     private DID getLocalDID(GetLocalDIDRequest r) {

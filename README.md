@@ -129,3 +129,6 @@ We share design goals from the [W3C spec](https://w3c-ccg.github.io/did-spec/#de
 ## Features and Roadmap
 The DID Service is being implemented as individual projects needs arise.
 
+### 0.6.2
+- Adding Reputation support for signers signing attributes of signees.
+

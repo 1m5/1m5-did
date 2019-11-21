@@ -42,6 +42,8 @@ public class DIDService extends BaseService {
     public static final String OPERATION_HASH = "HASH";
     public static final String OPERATION_VERIFY_HASH = "VERIFY_HASH";
 
+    public static final String OPERATION_VOUCH = "VOUCH";
+
     public static final String OPERATION_ADD_CONTACT = "ADD_CONTACT";
     public static final String OPERATION_GET_CONTACT = "GET_CONTACT";
 
@@ -204,8 +206,28 @@ public class DIDService extends BaseService {
                 }
                 break;
             }
+            case OPERATION_VOUCH:{
+                VouchRequest r = (VouchRequest)DLC.getData(VouchRequest.class,e);
+                if(r.signer==null) {
+                    r.errorCode = VouchRequest.SIGNER_REQUIRED;
+                    break;
+                }
+                if(r.signee==null){
+                    r.errorCode = VouchRequest.SIGNEE_REQUIRED;
+                    break;
+                }
+                if(r.attributesToSign==null) {
+                    r.errorCode = VouchRequest.ATTRIBUTES_REQUIRED;
+                    break;
+                }
+
+            }
             default: deadLetter(e); // Operation not supported
         }
+    }
+
+    private void vouch(VouchRequest request) {
+        // TODO: complete signing attributes
     }
 
     private DID getLocalDID(GetLocalDIDRequest r) {
@@ -282,28 +304,32 @@ public class DIDService extends BaseService {
         LoadDIDDAO dao = new LoadDIDDAO(infoVaultDB, r.did);
         dao.execute();
         DID loadedDID = dao.getLoadedDID();
-        LOG.info("Loaded DID: "+loadedDID);
-        if(loadedDID == null || loadedDID.getUsername() == null || loadedDID.getUsername().isEmpty()) {
-            LOG.info("Username unknown.");
-            r.errorCode = AuthenticateDIDRequest.DID_USERNAME_UNKNOWN;
-            r.did.setAuthenticated(false);
-            return;
+        if(loadedDID.getPassphraseHash()==null) {
+            if(r.autogenerate) {
+                r.did.setVerified(true);
+                r.did.setAuthenticated(true);
+                loadedDID = save(r.did, true);
+                LOG.info("Saved DID: " + loadedDID);
+            } else {
+                LOG.warning("Unable to load DID and autogenerate=false. Authentication failed.");
+                r.errorCode = AuthenticateDIDRequest.DID_USERNAME_UNKNOWN;
+                return;
+            }
+        } else {
+            LOG.info("Loaded DID: "+loadedDID);
+            Boolean authN = null;
+            LOG.info("Verifying password hash...");
+            try {
+                authN = HashUtil.verifyPasswordHash(r.did.getPassphrase(), loadedDID.getPassphraseHash());
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+                LOG.warning(e.getLocalizedMessage());
+            }
+            LOG.info("AuthN: "+(authN != null && authN));
+            r.did.setAuthenticated(authN != null && authN);
         }
-        LOG.info("Username known.");
-        LOG.info("Passphrase Hash Algorithm: "+loadedDID.getPassphraseHashAlgorithm());
-        Boolean authN = null;
-        LOG.info("Verifying password hash...");
-        try {
-            authN = HashUtil.verifyPasswordHash(r.did.getPassphrase(), loadedDID.getPassphraseHash());
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            LOG.warning(e.getLocalizedMessage());
-        }
-        LOG.info("AuthN: "+(authN != null && authN));
-        r.did.setAuthenticated(authN != null && authN);
         if(r.did.getAuthenticated()) {
             r.did = loadedDID;
-            r.did.setAuthenticated(true);
             localUserDIDs.put(r.did.getUsername(),r.did);
         }
     }
